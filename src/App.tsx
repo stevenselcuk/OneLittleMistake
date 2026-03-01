@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { ScoreBoard } from './components/ScoreBoard';
-import { playGameOverSound, playLineSound, playSquareSound } from './utils/audio';
+import { initAudio, playGameOverSound, playLineSound, playSquareSound } from './utils/audio';
 import { LinesState, Player, SquaresState, checkSquares, getBestAIMove } from './utils/gameLogic';
 import { THEMES, ThemeName } from './utils/theme';
 
