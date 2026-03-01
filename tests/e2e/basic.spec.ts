@@ -5,7 +5,7 @@ test('has title', async ({ page }) => {
 
   // Expect a title "to contain" a substring.
   // Replace with your actual project title
-  await expect(page).toHaveTitle(/onelittlemistake/i);
+  await expect(page).toHaveTitle(/One Little Mistake/i);
 });
 
 test('renders main content', async ({ page }) => {

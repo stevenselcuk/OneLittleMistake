@@ -2,7 +2,7 @@
 <img src="https://i.imgur.com/xmti3Mo.png" />
 </div>
 
-# onelittlemistake
+# One Little Mistake
 
 [![CI/CD](https://github.com/stevenselcuk/onelittlemistake/actions/workflows/ci.yml/badge.svg)](https://github.com/stevenselcuk/onelittlemistake/actions/workflows/ci.yml)
 
