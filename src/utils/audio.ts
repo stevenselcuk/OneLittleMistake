@@ -3,7 +3,10 @@ let audioCtx: AudioContext | null = null;
 export const initAudio = () => {
   if (typeof window === 'undefined') return;
   if (!audioCtx) {
-    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    audioCtx = new AudioContextClass();
   }
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
@@ -15,25 +18,25 @@ const playTone = (
   type: OscillatorType,
   duration: number,
   vol: number = 0.1,
-  rampDown: boolean = true
+  rampDown: boolean = true,
 ) => {
   if (!audioCtx) return;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  
+
   osc.type = type;
   osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-  
+
   gain.gain.setValueAtTime(vol, audioCtx.currentTime);
   if (rampDown) {
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
   } else {
     gain.gain.setValueAtTime(0, audioCtx.currentTime + duration);
   }
-  
+
   osc.connect(gain);
   gain.connect(audioCtx.destination);
-  
+
   osc.start();
   osc.stop(audioCtx.currentTime + duration);
 };
@@ -48,7 +51,7 @@ export const playLineSound = (player: 'P' | 'C') => {
 export const playSquareSound = (player: 'P' | 'C') => {
   initAudio();
   const baseFreq = player === 'P' ? 880 : 659.25;
-  
+
   // A quick, rewarding two-note arpeggio
   playTone(baseFreq, 'triangle', 0.2, 0.08);
   setTimeout(() => {
@@ -63,7 +66,7 @@ export const playGameOverSound = (winner: 'P' | 'C' | 'Draw') => {
     playTone(523.25, 'sine', 1.5, 0.1); // C5
     playTone(659.25, 'sine', 1.5, 0.1); // E5
     playTone(783.99, 'sine', 1.5, 0.1); // G5
-    playTone(1046.50, 'sine', 1.5, 0.1); // C6
+    playTone(1046.5, 'sine', 1.5, 0.1); // C6
   } else if (winner === 'C') {
     // Minor, descending or darker chord
     playTone(440, 'triangle', 1.5, 0.1); // A4

@@ -1,20 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'motion/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { ScoreBoard } from './components/ScoreBoard';
-import {
-  Player,
-  LinesState,
-  SquaresState,
-  checkSquares,
-  getBestAIMove,
-} from './utils/gameLogic';
-import {
-  initAudio,
-  playLineSound,
-  playSquareSound,
-  playGameOverSound,
-} from './utils/audio';
+import { playGameOverSound, playLineSound, playSquareSound } from './utils/audio';
+import { LinesState, Player, SquaresState, checkSquares, getBestAIMove } from './utils/gameLogic';
 import { THEMES, ThemeName } from './utils/theme';
 
 const LEVELS = [6, 8, 12, 16, 24, 32];
@@ -36,7 +25,7 @@ export default function App() {
   const [turn, setTurn] = useState<Player>('P');
   const [scores, setScores] = useState({ P: 0, C: 0 });
   const [gameOver, setGameOver] = useState(false);
-  
+
   const isProcessingRef = useRef(false);
 
   const resetGame = useCallback((newSize?: number) => {
@@ -85,31 +74,34 @@ export default function App() {
         return newLines;
       });
     },
-    [gameOver, lines, gridSize, turn]
+    [gameOver, lines, gridSize, turn],
   );
 
   // Check for game over
   useEffect(() => {
     const totalLines = 2 * gridSize * (gridSize - 1);
     const currentLines = Object.keys(lines).length;
-    
-    if (currentLines > 0 && currentLines === totalLines && !gameOver) {
-      setGameOver(true);
-      const winner = scores.P > scores.C ? 'P' : scores.C > scores.P ? 'C' : 'Draw';
-      playGameOverSound(winner);
 
-      if (winner === 'P') {
-        const currentIndex = LEVELS.indexOf(gridSize);
-        if (currentIndex !== -1 && currentIndex < LEVELS.length - 1) {
-          const nextLevel = LEVELS[currentIndex + 1];
-          if (nextLevel > maxUnlocked) {
-            setMaxUnlocked(nextLevel);
-            localStorage.setItem('maxUnlockedSize', nextLevel.toString());
+    if (currentLines > 0 && currentLines === totalLines && !gameOver) {
+      setTimeout(() => {
+        setGameOver(true);
+        // Calculate winner locally to avoid dependency on state during update
+        const winner = scores.P > scores.C ? 'P' : scores.C > scores.P ? 'C' : 'Draw';
+        playGameOverSound(winner);
+
+        if (winner === 'P') {
+          const currentIndex = LEVELS.indexOf(gridSize);
+          if (currentIndex !== -1 && currentIndex < LEVELS.length - 1) {
+            const nextLevel = LEVELS[currentIndex + 1];
+            if (nextLevel > maxUnlocked) {
+              setMaxUnlocked(nextLevel);
+              localStorage.setItem('maxUnlockedSize', nextLevel.toString());
+            }
           }
         }
-      }
+      }, 0);
     }
-  }, [lines, gridSize, gameOver, scores, maxUnlocked]);
+  }, [lines, gridSize, gameOver, scores.P, scores.C, maxUnlocked]);
 
   // AI Turn
   useEffect(() => {
@@ -124,10 +116,10 @@ export default function App() {
         if (bestMove) {
           setLines((prev) => {
             if (prev[bestMove]) return prev;
-            
+
             const newLines = { ...prev, [bestMove]: 'C' as Player };
             const { newSquares, completedCount } = checkSquares(newLines, bestMove, gridSize, 'C');
-            
+
             if (completedCount > 0) {
               playSquareSound('C');
               setSquares((prevSq) => ({ ...prevSq, ...newSquares }));
@@ -148,23 +140,25 @@ export default function App() {
   }, [turn, gameOver, lines, gridSize]);
 
   return (
-    <div className={`min-h-screen ${theme.appBg} ${theme.appText} flex flex-col items-center p-4 font-sans transition-colors duration-500`}>
+    <div
+      className={`min-h-screen ${theme.appBg} ${theme.appText} flex flex-col items-center p-4 font-sans transition-colors duration-500`}
+    >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="w-full max-w-[512px] flex flex-col items-center flex-1 justify-center pb-12"
+        className="flex w-full max-w-[512px] flex-1 flex-col items-center justify-center pb-12"
       >
-        <ScoreBoard 
-          scores={scores} 
-          turn={turn} 
-          gameOver={gameOver} 
-          onReset={() => resetGame()} 
+        <ScoreBoard
+          scores={scores}
+          turn={turn}
+          gameOver={gameOver}
+          onReset={() => resetGame()}
           theme={theme}
           themeName={themeName}
           onThemeChange={setThemeName}
         />
 
-        <div className="w-full max-w-[512px] aspect-square flex items-center justify-center mt-4">
+        <div className="mt-4 flex aspect-square w-full max-w-[512px] items-center justify-center">
           <GameBoard
             gridSize={gridSize}
             lines={lines}
@@ -175,7 +169,9 @@ export default function App() {
           />
         </div>
 
-        <div className={`flex items-center justify-center gap-6 mt-8 text-xs font-mono ${theme.mutedText} transition-colors duration-500`}>
+        <div
+          className={`mt-8 flex items-center justify-center gap-6 font-mono text-xs ${theme.mutedText} transition-colors duration-500`}
+        >
           {LEVELS.map((size) => {
             const isUnlocked = size <= maxUnlocked;
             return (
@@ -183,12 +179,12 @@ export default function App() {
                 key={size}
                 onClick={() => isUnlocked && resetGame(size)}
                 disabled={!isUnlocked}
-                className={`transition-all duration-300 relative ${
+                className={`relative transition-all duration-300 ${
                   !isUnlocked
-                    ? 'opacity-30 cursor-not-allowed'
+                    ? 'cursor-not-allowed opacity-30'
                     : gridSize === size
-                    ? `${theme.appText} font-bold scale-110`
-                    : 'hover:opacity-70'
+                      ? `${theme.appText} scale-110 font-bold`
+                      : 'hover:opacity-70'
                 }`}
               >
                 {size}
