@@ -17,7 +17,7 @@ export default function App() {
     }
     return 6;
   });
-  const [themeName, setThemeName] = useState<ThemeName>('dark');
+  const [themeName, setThemeName] = useState<ThemeName>('sepia');
   const theme = THEMES[themeName];
 
   const [lines, setLines] = useState<LinesState>({});
@@ -143,6 +143,7 @@ export default function App() {
     <div
       className={`min-h-screen ${theme.appBg} ${theme.appText} flex flex-col items-center p-4 font-sans transition-colors duration-500`}
     >
+      <h1 className="sr-only">One Little Mistake - Dots and Boxes Game</h1>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
