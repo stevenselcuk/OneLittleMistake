@@ -25,6 +25,7 @@ export default function App() {
   const [turn, setTurn] = useState<Player>('P');
   const [scores, setScores] = useState({ P: 0, C: 0 });
   const [gameOver, setGameOver] = useState(false);
+  const [lastLineId, setLastLineId] = useState<string | null>(null);
 
   const isProcessingRef = useRef(false);
 
@@ -37,6 +38,7 @@ export default function App() {
     setTurn('P');
     setScores({ P: 0, C: 0 });
     setGameOver(false);
+    setLastLineId(null);
     isProcessingRef.current = false;
   }, []);
 
@@ -54,6 +56,7 @@ export default function App() {
         }
 
         const newLines = { ...prev, [lineId]: 'P' as Player };
+        setLastLineId(lineId);
         const { newSquares, completedCount } = checkSquares(newLines, lineId, gridSize, 'P');
 
         if (completedCount > 0) {
@@ -118,6 +121,7 @@ export default function App() {
             if (prev[bestMove]) return prev;
 
             const newLines = { ...prev, [bestMove]: 'C' as Player };
+            setLastLineId(bestMove);
             const { newSquares, completedCount } = checkSquares(newLines, bestMove, gridSize, 'C');
 
             if (completedCount > 0) {
@@ -167,6 +171,7 @@ export default function App() {
             onLineClick={handleLineClick}
             turn={turn}
             theme={theme}
+            lastLineId={lastLineId}
           />
         </div>
 

@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'sepia' | 'tron' | 'duotone';
+export type ThemeName = 'sepia' | 'tron' | 'duotone';
 
 export interface Theme {
   name: ThemeName;
@@ -21,25 +21,6 @@ export interface Theme {
 }
 
 export const THEMES: Record<ThemeName, Theme> = {
-  dark: {
-    name: 'dark',
-    appBg: 'bg-[#050505]',
-    appText: 'text-[#e5e5e5]',
-    dot: 'bg-gray-700',
-    p1Line: 'bg-blue-500',
-    p2Line: 'bg-fuchsia-500',
-    p1Square: 'bg-blue-500/30',
-    p2Square: 'bg-fuchsia-500/30',
-    p1Text: 'text-blue-500',
-    p2Text: 'text-fuchsia-500',
-    p1Pulse: 'bg-blue-500',
-    p2Pulse: 'bg-fuchsia-500',
-    hoverLine: 'group-hover:bg-gray-800',
-    mutedText: 'text-gray-600',
-    dropdownBg: 'bg-[#111111]',
-    dropdownBorder: 'border-gray-800',
-    dropdownHover: 'hover:bg-white/5',
-  },
   sepia: {
     name: 'sepia',
     appBg: 'bg-[#f4ecd8]',
@@ -96,5 +77,5 @@ export const THEMES: Record<ThemeName, Theme> = {
     dropdownBg: 'bg-[#f5f5f5]',
     dropdownBorder: 'border-[#e0e0e0]',
     dropdownHover: 'hover:bg-black/5',
-  }
+  },
 };
