@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GameBoard } from './components/GameBoard';
+import { InfoModal } from './components/InfoModal';
 import { ScoreBoard } from './components/ScoreBoard';
 import { Toast } from './components/Toast';
 import { initAudio, playGameOverSound, playLineSound, playSquareSound } from './utils/audio';
@@ -46,6 +47,7 @@ export default function App() {
     isVisible: false,
   });
   const [lastMoveTime, setLastMoveTime] = useState<number>(() => Date.now());
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const isProcessingRef = useRef(false);
 
@@ -171,16 +173,48 @@ export default function App() {
     }
   }, [turn, gameOver, lines, gridSize]);
 
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input (not currently applicable but good practice)
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      const key = e.key.toLowerCase();
+
+      if (key === 'r') {
+        resetGame();
+      } else if (key === 't') {
+        const themeNames = Object.keys(THEMES) as ThemeName[];
+        const currentIndex = themeNames.indexOf(themeName);
+        const nextIndex = (currentIndex + 1) % themeNames.length;
+        setThemeName(themeNames[nextIndex]);
+      } else if (key >= '1' && key <= '6') {
+        const levelIndex = parseInt(key, 10) - 1;
+        if (levelIndex < LEVELS.length) {
+          const selectedSize = LEVELS[levelIndex];
+          if (selectedSize <= maxUnlocked) {
+            resetGame(selectedSize);
+          }
+        }
+      } else if (key === '?' || key === 'h') {
+        setIsInfoOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [resetGame, themeName, maxUnlocked]);
+
   // Player move warning timer
   useEffect(() => {
     if (turn === 'P' && !gameOver) {
-      const interval = setInterval(() => {
-        const now = Date.now();
-        if (now - lastMoveTime >= 30000 && !toast.isVisible) {
-          setToast({ message: "Still there? It's your turn!", isVisible: true });
+      const timer = setInterval(() => {
+        const timeSinceLastMove = Date.now() - lastMoveTime;
+        if (timeSinceLastMove >= 30000 && !toast.isVisible) {
+          setToast({ message: 'Are you still there? Your turn!', isVisible: true });
         }
       }, 1000);
-      return () => clearInterval(interval);
+      return () => clearInterval(timer);
     }
   }, [turn, gameOver, lastMoveTime, toast.isVisible]);
 
@@ -202,6 +236,7 @@ export default function App() {
           theme={theme}
           themeName={themeName}
           onThemeChange={setThemeName}
+          onInfoOpen={() => setIsInfoOpen(true)}
         />
 
         <div className="mt-4 flex aspect-square w-full max-w-[512px] items-center justify-center">
@@ -226,6 +261,8 @@ export default function App() {
                 key={size}
                 onClick={() => isUnlocked && resetGame(size)}
                 disabled={!isUnlocked}
+                aria-label={`Set grid size to ${size}x${size}${!isUnlocked ? ' (Locked)' : ''}`}
+                aria-current={gridSize === size ? 'true' : 'false'}
                 className={`relative transition-all duration-300 ${
                   !isUnlocked
                     ? 'cursor-not-allowed opacity-30'
@@ -246,6 +283,7 @@ export default function App() {
         onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
         theme={theme}
       />
+      <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} theme={theme} />
     </div>
   );
 }

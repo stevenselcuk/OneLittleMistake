@@ -21,9 +21,64 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   theme,
   lastLineId,
 }) => {
+  const boardRef = React.useRef<HTMLDivElement>(null);
+
   const dotClass = gridSize <= 12 ? 'w-2 h-2' : 'w-1.5 h-1.5';
   const hLineClass = gridSize <= 12 ? 'h-2' : 'h-1.5';
   const vLineClass = gridSize <= 12 ? 'w-2' : 'w-1.5';
+
+  const handleKeyDown = (e: React.KeyboardEvent, lineId: string) => {
+    const [type, rStr, cStr] = lineId.split('-');
+    const r = parseInt(rStr, 10);
+    const c = parseInt(cStr, 10);
+
+    let nextId: string | null = null;
+
+    switch (e.key) {
+      case 'ArrowUp':
+        e.preventDefault();
+        if (type === 'h') {
+          if (r > 0) nextId = `v-${r - 1}-${c}`;
+        } else {
+          nextId = `h-${r}-${c}`;
+        }
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        if (type === 'h') {
+          nextId = `v-${r}-${c}`;
+        } else {
+          if (r < gridSize - 1) nextId = `h-${r + 1}-${c}`;
+        }
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (type === 'v') {
+          if (c > 0) nextId = `h-${r}-${c - 1}`;
+        } else {
+          nextId = `v-${r}-${c}`;
+        }
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (type === 'v') {
+          nextId = `h-${r}-${c}`;
+        } else {
+          if (c < gridSize - 1) nextId = `v-${r}-${c + 1}`;
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (!lines[lineId]) onLineClick(lineId);
+        break;
+    }
+
+    if (nextId) {
+      const nextEl = boardRef.current?.querySelector(`[data-line-id="${nextId}"]`) as HTMLElement;
+      nextEl?.focus();
+    }
+  };
 
   const renderDotsAndLines = () => {
     const elements = [];
@@ -51,15 +106,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           elements.push(
             <div
               key={lineId}
-              className={`${hLineClass} group relative flex w-full cursor-pointer items-center justify-center`}
+              data-line-id={lineId}
+              role="button"
+              tabIndex={0}
+              aria-label={`Horizontal line at row ${r + 1}, column ${c + 1}`}
+              aria-pressed={!!owner}
+              className={`${hLineClass} group relative flex w-full cursor-pointer items-center justify-center rounded-sm outline-none`}
               onClick={() => !owner && onLineClick(lineId)}
+              onKeyDown={(e) => handleKeyDown(e, lineId)}
             >
               {/* Invisible expanded hit area */}
               <div className="absolute -top-3 right-0 -bottom-3 left-0 z-10" />
 
               {!owner && (
                 <div
-                  className={`absolute h-[2px] w-full bg-transparent ${theme.hoverLine} transition-colors duration-300`}
+                  className={`absolute h-[2px] w-full bg-transparent ${theme.hoverLine} transition-colors duration-300 group-focus:scale-x-110 group-focus:bg-current group-focus:opacity-40`}
                 />
               )}
               {owner && (
@@ -107,15 +168,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           elements.push(
             <div
               key={lineId}
-              className={`${vLineClass} group relative flex h-full cursor-pointer items-center justify-center`}
+              data-line-id={lineId}
+              role="button"
+              tabIndex={0}
+              aria-label={`Vertical line at row ${r + 1}, column ${c + 1}`}
+              aria-pressed={!!owner}
+              className={`${vLineClass} group relative flex h-full cursor-pointer items-center justify-center rounded-sm outline-none`}
               onClick={() => !owner && onLineClick(lineId)}
+              onKeyDown={(e) => handleKeyDown(e, lineId)}
             >
               {/* Invisible expanded hit area */}
               <div className="absolute top-0 -right-3 bottom-0 -left-3 z-10" />
 
               {!owner && (
                 <div
-                  className={`absolute h-full w-[2px] bg-transparent ${theme.hoverLine} transition-colors duration-300`}
+                  className={`absolute h-full w-[2px] bg-transparent ${theme.hoverLine} transition-colors duration-300 group-focus:scale-y-110 group-focus:bg-current group-focus:opacity-40`}
                 />
               )}
               {owner && (
@@ -181,6 +248,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   return (
     <div
+      ref={boardRef}
+      role="grid"
+      aria-label="Dots and Boxes Game Board"
       className="grid h-full w-full gap-0"
       style={{
         gridTemplateColumns: `repeat(${gridSize - 1}, max-content 1fr) max-content`,
