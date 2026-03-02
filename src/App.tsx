@@ -7,6 +7,7 @@ import { LinesState, Player, SquaresState, checkSquares, getBestAIMove } from '.
 import { THEMES, ThemeName } from './utils/theme';
 
 const LEVELS = [6, 8, 12, 16, 24, 32];
+const THEME_STORAGE_KEY = 'theme_selection';
 
 export default function App() {
   const [gridSize, setGridSize] = useState<number>(6);
@@ -17,8 +18,21 @@ export default function App() {
     }
     return 6;
   });
-  const [themeName, setThemeName] = useState<ThemeName>('sepia');
+  const [themeName, setThemeName] = useState<ThemeName>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY);
+      if (saved && Object.keys(THEMES).includes(saved)) {
+        return saved as ThemeName;
+      }
+    }
+    return 'sepia';
+  });
   const theme = THEMES[themeName];
+
+  // Persist theme choice
+  useEffect(() => {
+    localStorage.setItem(THEME_STORAGE_KEY, themeName);
+  }, [themeName]);
 
   const [lines, setLines] = useState<LinesState>({});
   const [squares, setSquares] = useState<SquaresState>({});
