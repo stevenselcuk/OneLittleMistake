@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { ScoreBoard } from './components/ScoreBoard';
+import { Toast } from './components/Toast';
 import { initAudio, playGameOverSound, playLineSound, playSquareSound } from './utils/audio';
 import { LinesState, Player, SquaresState, checkSquares, getBestAIMove } from './utils/gameLogic';
 import { THEMES, ThemeName } from './utils/theme';
@@ -40,6 +41,11 @@ export default function App() {
   const [scores, setScores] = useState({ P: 0, C: 0 });
   const [gameOver, setGameOver] = useState(false);
   const [lastLineId, setLastLineId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; isVisible: boolean }>({
+    message: '',
+    isVisible: false,
+  });
+  const [lastMoveTime, setLastMoveTime] = useState<number>(() => Date.now());
 
   const isProcessingRef = useRef(false);
 
@@ -53,6 +59,7 @@ export default function App() {
     setScores({ P: 0, C: 0 });
     setGameOver(false);
     setLastLineId(null);
+    setLastMoveTime(Date.now());
     isProcessingRef.current = false;
   }, []);
 
@@ -80,11 +87,13 @@ export default function App() {
             ...prevScores,
             P: prevScores.P + completedCount,
           }));
+          setLastMoveTime(Date.now());
           // Player gets another turn
           isProcessingRef.current = false;
         } else {
           playLineSound('P');
           setTurn('C');
+          setLastMoveTime(Date.now());
           isProcessingRef.current = false;
         }
 
@@ -106,6 +115,10 @@ export default function App() {
         const winner = scores.P > scores.C ? 'P' : scores.C > scores.P ? 'C' : 'Draw';
         playGameOverSound(winner);
 
+        // Show result toast
+        const message = winner === 'P' ? 'YOU WON!' : winner === 'C' ? 'YOU LOST!' : "IT'S A DRAW!";
+        setToast({ message, isVisible: true });
+
         if (winner === 'P') {
           const currentIndex = LEVELS.indexOf(gridSize);
           if (currentIndex !== -1 && currentIndex < LEVELS.length - 1) {
@@ -123,9 +136,9 @@ export default function App() {
   // AI Turn
   useEffect(() => {
     if (turn === 'C' && !gameOver) {
-      // Faster delay for larger grids to keep the game moving
-      const minDelay = gridSize > 12 ? 50 : 300;
-      const maxDelay = gridSize > 12 ? 150 : 700;
+      // AI thinking delay: 800ms to 2000ms
+      const minDelay = 800;
+      const maxDelay = 2000;
       const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
       const timer = setTimeout(() => {
@@ -148,6 +161,7 @@ export default function App() {
             } else {
               playLineSound('C');
               setTurn('P');
+              setLastMoveTime(Date.now());
             }
             return newLines;
           });
@@ -156,6 +170,19 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [turn, gameOver, lines, gridSize]);
+
+  // Player move warning timer
+  useEffect(() => {
+    if (turn === 'P' && !gameOver) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        if (now - lastMoveTime >= 30000 && !toast.isVisible) {
+          setToast({ message: "Still there? It's your turn!", isVisible: true });
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [turn, gameOver, lastMoveTime, toast.isVisible]);
 
   return (
     <div
@@ -213,6 +240,12 @@ export default function App() {
           })}
         </div>
       </motion.div>
+      <Toast
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
+        theme={theme}
+      />
     </div>
   );
 }
