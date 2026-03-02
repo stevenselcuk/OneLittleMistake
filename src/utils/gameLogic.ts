@@ -36,7 +36,7 @@ export const checkSquares = (
   lines: LinesState,
   lineId: string,
   gridSize: number,
-  player: Player
+  player: Player,
 ): { newSquares: SquaresState; completedCount: number } => {
   const squaresToCheck = getLineSquares(lineId, gridSize);
   const newSquares: SquaresState = {};
@@ -77,7 +77,7 @@ export const getAvailableLines = (lines: LinesState, gridSize: number): string[]
 
 export const getBestAIMove = (lines: LinesState, gridSize: number): string | null => {
   const squareDrawnCounts = new Int8Array((gridSize - 1) * (gridSize - 1));
-  
+
   for (let r = 0; r < gridSize - 1; r++) {
     for (let c = 0; c < gridSize - 1; c++) {
       let count = 0;
@@ -86,7 +86,7 @@ export const getBestAIMove = (lines: LinesState, gridSize: number): string | nul
       if (lines[`v-${r}-${c}`]) count++;
       if (lines[`v-${r}-${c + 1}`]) count++;
       squareDrawnCounts[r * (gridSize - 1) + c] = count;
-      
+
       if (count === 3) {
         if (!lines[`h-${r}-${c}`]) return `h-${r}-${c}`;
         if (!lines[`h-${r + 1}-${c}`]) return `h-${r + 1}-${c}`;
@@ -111,7 +111,7 @@ export const getBestAIMove = (lines: LinesState, gridSize: number): string | nul
         let isSafe = true;
         if (r > 0 && squareDrawnCounts[(r - 1) * (gridSize - 1) + c] === 2) isSafe = false;
         if (r < gridSize - 1 && squareDrawnCounts[r * (gridSize - 1) + c] === 2) isSafe = false;
-        
+
         if (isSafe) {
           safeLinesCount++;
           if (Math.random() < 1 / safeLinesCount) safeLine = hId;
@@ -130,7 +130,7 @@ export const getBestAIMove = (lines: LinesState, gridSize: number): string | nul
         let isSafe = true;
         if (c > 0 && squareDrawnCounts[r * (gridSize - 1) + (c - 1)] === 2) isSafe = false;
         if (c < gridSize - 1 && squareDrawnCounts[r * (gridSize - 1) + c] === 2) isSafe = false;
-        
+
         if (isSafe) {
           safeLinesCount++;
           if (Math.random() < 1 / safeLinesCount) safeLine = vId;
@@ -141,3 +141,5 @@ export const getBestAIMove = (lines: LinesState, gridSize: number): string | nul
 
   return safeLine || availableLine;
 };
+
+export const getRandomStartingPlayer = (): Player => (Math.random() < 0.5 ? 'P' : 'C');

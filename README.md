@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://i.imgur.com/xmti3Mo.png" />
+<img src="https://i.imgur.com/xhjJ3ag.png" />
 </div>
 
 # One Little Mistake

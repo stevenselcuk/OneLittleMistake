@@ -5,11 +5,13 @@ import { InfoModal } from './components/InfoModal';
 import { ScoreBoard } from './components/ScoreBoard';
 import { Toast } from './components/Toast';
 import { initAudio, playGameOverSound, playLineSound, playSquareSound } from './utils/audio';
-import { LinesState, Player, SquaresState, checkSquares, getBestAIMove } from './utils/gameLogic';
+import { Player, checkSquares, getBestAIMove, getRandomStartingPlayer } from './utils/gameLogic';
 import { THEMES, ThemeName } from './utils/theme';
 
 const LEVELS = [6, 8, 12, 16, 24, 32];
 const THEME_STORAGE_KEY = 'theme_selection';
+
+const INITIAL_STARTER = getRandomStartingPlayer();
 
 export default function App() {
   const [gridSize, setGridSize] = useState<number>(6);
@@ -38,13 +40,13 @@ export default function App() {
 
   const [lines, setLines] = useState<LinesState>({});
   const [squares, setSquares] = useState<SquaresState>({});
-  const [turn, setTurn] = useState<Player>('P');
+  const [turn, setTurn] = useState<Player>(INITIAL_STARTER);
   const [scores, setScores] = useState({ P: 0, C: 0 });
   const [gameOver, setGameOver] = useState(false);
   const [lastLineId, setLastLineId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; isVisible: boolean }>({
-    message: '',
-    isVisible: false,
+    message: INITIAL_STARTER === 'P' ? 'You start!' : 'Computer starts!',
+    isVisible: true,
   });
   const [lastMoveTime, setLastMoveTime] = useState<number>(() => Date.now());
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -57,12 +59,14 @@ export default function App() {
     }
     setLines({});
     setSquares({});
-    setTurn('P');
+    const starter = getRandomStartingPlayer();
+    setTurn(starter);
     setScores({ P: 0, C: 0 });
     setGameOver(false);
     setLastLineId(null);
     setLastMoveTime(Date.now());
     isProcessingRef.current = false;
+    setToast({ message: starter === 'P' ? 'You start!' : 'Computer starts!', isVisible: true });
   }, []);
 
   const handleLineClick = useCallback(
