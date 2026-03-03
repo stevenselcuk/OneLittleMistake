@@ -6,6 +6,12 @@
 
 [![CI/CD](https://github.com/stevenselcuk/onelittlemistake/actions/workflows/ci.yml/badge.svg)](https://github.com/stevenselcuk/onelittlemistake/actions/workflows/ci.yml)
 
+[Play Now](https://onelittlemistake.tabbythecat.com/) | [Staging](https://stevenselcuk.github.io/OneLittleMistake/) | [iOS\*](https://stevenselcuk.github.io/OneLittleMistake/)
+
+\*Coming Soon
+
+---
+
 ## Development Scripts
 
 - `npm run dev`: Start development server
