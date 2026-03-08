@@ -12,9 +12,34 @@ const LEVELS = [6, 8, 12, 16, 24, 32];
 const THEME_STORAGE_KEY = 'theme_selection';
 
 const INITIAL_STARTER = getRandomStartingPlayer();
+const SAVED_GAME_KEY = 'saved_game_state';
 
 export default function App() {
-  const [gridSize, setGridSize] = useState<number>(6);
+  // Read saved game state once on mount
+  const getInitialGameState = () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(SAVED_GAME_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error('Failed to parse saved game state', e);
+        }
+      }
+    }
+    return null;
+  };
+
+  const [initialGameState] = useState<{
+    gridSize?: number;
+    lines?: LinesState;
+    squares?: SquaresState;
+    turn?: Player;
+    scores?: { P: number; C: number };
+    lastLineId?: string | null;
+  } | null>(getInitialGameState);
+
+  const [gridSize, setGridSize] = useState<number>(() => initialGameState?.gridSize ?? 6);
   const [maxUnlocked, setMaxUnlocked] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('maxUnlockedSize');
@@ -38,18 +63,38 @@ export default function App() {
     localStorage.setItem(THEME_STORAGE_KEY, themeName);
   }, [themeName]);
 
-  const [lines, setLines] = useState<LinesState>({});
-  const [squares, setSquares] = useState<SquaresState>({});
-  const [turn, setTurn] = useState<Player>(INITIAL_STARTER);
-  const [scores, setScores] = useState({ P: 0, C: 0 });
+  const [lines, setLines] = useState<LinesState>(() => initialGameState?.lines ?? {});
+  const [squares, setSquares] = useState<SquaresState>(() => initialGameState?.squares ?? {});
+  const [turn, setTurn] = useState<Player>(() => initialGameState?.turn ?? INITIAL_STARTER);
+  const [scores, setScores] = useState(() => initialGameState?.scores ?? { P: 0, C: 0 });
   const [gameOver, setGameOver] = useState(false);
-  const [lastLineId, setLastLineId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; isVisible: boolean }>({
-    message: INITIAL_STARTER === 'P' ? 'You start!' : 'Computer starts!',
-    isVisible: true,
+  const [lastLineId, setLastLineId] = useState<string | null>(() => initialGameState?.lastLineId ?? null);
+  const [toast, setToast] = useState<{ message: string; isVisible: boolean }>(() => {
+    if (initialGameState) {
+      return { message: 'Game loaded!', isVisible: true };
+    }
+    return {
+      message: INITIAL_STARTER === 'P' ? 'You start!' : 'Computer starts!',
+      isVisible: true,
+    };
   });
   const [lastMoveTime, setLastMoveTime] = useState<number>(() => Date.now());
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  // Auto-save game state
+  useEffect(() => {
+    if (!gameOver && Object.keys(lines).length > 0) {
+      const stateToSave = {
+        gridSize,
+        lines,
+        squares,
+        turn,
+        scores,
+        lastLineId,
+      };
+      localStorage.setItem(SAVED_GAME_KEY, JSON.stringify(stateToSave));
+    }
+  }, [gridSize, lines, squares, turn, scores, gameOver, lastLineId]);
 
   const isProcessingRef = useRef(false);
 
@@ -67,6 +112,9 @@ export default function App() {
     setLastMoveTime(Date.now());
     isProcessingRef.current = false;
     setToast({ message: starter === 'P' ? 'You start!' : 'Computer starts!', isVisible: true });
+
+    // Clear saved game on reset
+    localStorage.removeItem(SAVED_GAME_KEY);
   }, []);
 
   const handleLineClick = useCallback(
@@ -124,6 +172,9 @@ export default function App() {
         // Show result toast
         const message = winner === 'P' ? 'YOU WON!' : winner === 'C' ? 'YOU LOST!' : "IT'S A DRAW!";
         setToast({ message, isVisible: true });
+
+        // Clear saved game when game ends
+        localStorage.removeItem(SAVED_GAME_KEY);
 
         if (winner === 'P') {
           const currentIndex = LEVELS.indexOf(gridSize);
