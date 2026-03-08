@@ -66,7 +66,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, theme }) 
                 <section>
                   <div className="grid grid-cols-2 gap-x-8 gap-y-3 uppercase opacity-80">
                     <div className="flex justify-between">
-                      <span>Arrows</span>
+                      <span>Arrows/Tab</span>
                       <span className="opacity-40">Move</span>
                     </div>
                     <div className="flex justify-between">
