@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "One Little Mistake",
+  "version": "1.0.0",
+  "description": "A minimalist Dots and Boxes game",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Play One Little Mistake"
+  },
+  "icons": {
+    "16": "favicon-96x96.png",
+    "48": "favicon-96x96.png",
+    "128": "web-app-manifest-192x192.png"
+  }
+}
