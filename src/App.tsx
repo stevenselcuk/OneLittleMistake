@@ -68,7 +68,9 @@ export default function App() {
   const [turn, setTurn] = useState<Player>(() => initialGameState?.turn ?? INITIAL_STARTER);
   const [scores, setScores] = useState(() => initialGameState?.scores ?? { P: 0, C: 0 });
   const [gameOver, setGameOver] = useState(false);
-  const [lastLineId, setLastLineId] = useState<string | null>(() => initialGameState?.lastLineId ?? null);
+  const [lastLineId, setLastLineId] = useState<string | null>(
+    () => initialGameState?.lastLineId ?? null,
+  );
   const [toast, setToast] = useState<{ message: string; isVisible: boolean }>(() => {
     if (initialGameState) {
       return { message: 'Game loaded!', isVisible: true };
@@ -275,39 +277,45 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen ${theme.appBg} ${theme.appText} flex flex-col items-center p-4 font-sans transition-colors duration-500`}
+      className={`h-full w-full overflow-hidden ${theme.appBg} ${theme.appText} flex flex-col items-center p-4 font-sans transition-colors duration-500`}
     >
       <h1 className="sr-only">One Little Mistake - Dots and Boxes Game</h1>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex w-full max-w-[512px] flex-1 flex-col items-center justify-center pb-12"
+        className="flex min-h-0 w-full max-w-[500px] flex-1 flex-col items-center justify-between pb-2"
       >
-        <ScoreBoard
-          scores={scores}
-          turn={turn}
-          gameOver={gameOver}
-          onReset={() => resetGame()}
-          theme={theme}
-          themeName={themeName}
-          onThemeChange={setThemeName}
-          onInfoOpen={() => setIsInfoOpen(true)}
-        />
-
-        <div className="mt-4 flex aspect-square w-full max-w-[512px] items-center justify-center">
-          <GameBoard
-            gridSize={gridSize}
-            lines={lines}
-            squares={squares}
-            onLineClick={handleLineClick}
+        <div className="w-full shrink-0">
+          <ScoreBoard
+            scores={scores}
             turn={turn}
+            gameOver={gameOver}
+            onReset={() => resetGame()}
             theme={theme}
-            lastLineId={lastLineId}
+            themeName={themeName}
+            onThemeChange={setThemeName}
+            onInfoOpen={() => setIsInfoOpen(true)}
           />
         </div>
 
+        <div className="my-2 flex min-h-0 w-full flex-1 items-center justify-center">
+          <div className="relative aspect-square h-full max-w-full">
+            <div className="absolute inset-0">
+              <GameBoard
+                gridSize={gridSize}
+                lines={lines}
+                squares={squares}
+                onLineClick={handleLineClick}
+                turn={turn}
+                theme={theme}
+                lastLineId={lastLineId}
+              />
+            </div>
+          </div>
+        </div>
+
         <div
-          className={`mt-8 flex items-center justify-center gap-6 font-mono text-xs ${theme.mutedText} transition-colors duration-500`}
+          className={`flex shrink-0 items-center justify-center gap-6 font-mono text-xs ${theme.mutedText} transition-colors duration-500`}
         >
           {LEVELS.map((size) => {
             const isUnlocked = size <= maxUnlocked;

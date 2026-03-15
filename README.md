@@ -6,7 +6,7 @@
 
 [![CI/CD](https://github.com/stevenselcuk/onelittlemistake/actions/workflows/ci.yml/badge.svg)](https://github.com/stevenselcuk/onelittlemistake/actions/workflows/ci.yml)
 
-[Play Now](https://onelittlemistake.tabbythecat.com/) | [Staging](https://stevenselcuk.github.io/OneLittleMistake/) | [iOS\*](https://apps.apple.com/us/app/one-little-mistake/id6759854640)
+[Play Now](https://onelittlemistake.tabbythecat.com/) | [Staging](https://stevenselcuk.github.io/OneLittleMistake/) | [Chrome Extension](https://chromewebstore.google.com/detail/one-little-mistake/hkpdjognnjlfdodllndjmijkikanfcli) | [iOS\*](https://apps.apple.com/us/app/one-little-mistake/id6759854640)
 
 \*_iOS comes with multiplayer support, leaderboards and achievements_
 
